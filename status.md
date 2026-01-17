@@ -1,10 +1,25 @@
 # Web2PDF Project Status
 
-**Last Updated:** 2026-01-15
+**Version:** v0.1  
+**Last Updated:** 2026-01-17
 
 ## ✅ Project Status: COMPLETE
 
 The web documentation to PDF converter is **fully implemented** and functional.
+
+---
+
+## Release v0.1 Highlights
+
+### Bug Fixes
+- **Fixed hyperlink overlap** - MkDocs Material theme elements (headerlinks, sticky headers/sidebars) no longer appear on top of text
+- **Fixed page numbering** - Pages now show correct sequential numbers (was showing "1" on every page)
+- **Fixed crawler scope** - Crawler now stays within documentation path only (was crawling entire site)
+
+### New Features
+- **Path-based filtering** - `is_within_doc_path()` restricts crawling to documentation subdirectory
+- **Post-merge page numbering** - PyMuPDF adds sequential page numbers after PDF merge
+- **Enhanced URL filtering** - Expanded excluded patterns for non-documentation paths
 
 ---
 
@@ -23,46 +38,29 @@ The web documentation to PDF converter is **fully implemented** and functional.
 
 ---
 
-## Key Features Implemented
+## Key Features
 
-1. **Playwright-based Crawler** - Uses real browser with stealth mode to:
-   - Render JavaScript content
-   - Bypass bot detection
-   - Handle dynamic pages
+1. **Playwright-based Crawler** - Real browser with stealth mode for JavaScript rendering and bot detection bypass
 
-2. **URL Filtering** - Automatically:
-   - Filters external links
-   - Excludes asset files (CSS, JS, images)
-   - Normalizes URLs and removes fragments
+2. **URL Filtering** - Filters external links, excludes assets, restricts to documentation path
 
-3. **PDF Conversion** - Uses wkhtmltopdf via pdfkit:
-   - Converts HTML to individual PDFs
-   - Adds page headers/footers
-   - Works with local content (no network access during conversion)
+3. **PDF Conversion** - wkhtmltopdf via pdfkit with sanitized HTML (removes overlays, navigation elements)
 
-4. **PDF Merging** - Uses PyPDF2 to:
-   - Merge all pages into single PDF
-   - Generate bookmarks from page titles
-   - Maintain logical page order
+4. **PDF Merging** - PyPDF2 merging with bookmarks + PyMuPDF page numbering
 
-5. **CLI Interface** - Supports:
-   - Custom output filename
-   - Configurable crawl depth
-   - Adjustable request delay
-   - Verbose logging mode
+5. **CLI Interface** - Custom output, configurable depth, adjustable delay, verbose logging
 
 ---
 
 ## Verification
 
-### Successful Run
-A complete crawl was performed on the HP Anyware Manager documentation:
-- **Output:** `anyware_docs.pdf` (2.6 MB)
-- **Pages crawled:** Multiple pages successfully processed
-
-### Unit Tests
-- `tests/test_url_utils.py` - URL normalization, link filtering, title extraction
-- `tests/test_crawler.py` - Crawler state management, config, depth limits
+### Test Run
+HP Anyware Manager Enterprise documentation:
+- **Output:** `anyware_docs_complete.pdf`
+- **Pages:** 131 (from 106 crawled pages)
+- **Crawl time:** ~10 minutes
+- **Page numbers:** ✅ Correct sequential numbering
+- **Hyperlinks:** ✅ No overlay issues
 
 ---
 
@@ -88,4 +86,11 @@ python -m src.main https://docs.example.com/ \
 - **beautifulsoup4** + **lxml** - HTML parsing
 - **pdfkit** + wkhtmltopdf - HTML to PDF conversion
 - **PyPDF2** - PDF merging
+- **PyMuPDF** - Page numbering (added in v0.1)
 - **requests** - HTTP requests (fallback)
+
+---
+
+## Repository
+
+GitHub: https://github.com/thomasckr/web2pdf-gag
