@@ -25,6 +25,38 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+# Error page detection patterns (common 404-style messages that return HTTP 200)
+ERROR_PAGE_PATTERNS = [
+    "the content you're looking for is not here",
+    "page not found",
+    "this page does not exist",
+    "content not available",
+    "404 error",
+    "404 - page not found",
+    "the requested page could not be found",
+]
+
+
+def is_error_page(html_content: str) -> bool:
+    """
+    Check if the page content indicates an error/missing page.
+    
+    Some websites return HTTP 200 with error content instead of proper 404s.
+    This function detects common error page patterns to filter them out.
+    
+    Args:
+        html_content: The HTML content to check.
+        
+    Returns:
+        True if the content appears to be an error page, False otherwise.
+    """
+    content_lower = html_content.lower()
+    for pattern in ERROR_PAGE_PATTERNS:
+        if pattern in content_lower:
+            return True
+    return False
+
+
 @dataclass
 class CrawledPage:
     """
@@ -238,6 +270,12 @@ class WebCrawler:
                 # Check if we got actual content (not bot detection)
                 if 'JavaScript is disabled' in html_content:
                     logger.warning(f"Skipping bot-blocked page: {current_url}")
+                    result.failed_urls.append(current_url)
+                    continue
+                
+                # Check if we got an error page (404-style content with HTTP 200)
+                if is_error_page(html_content):
+                    logger.warning(f"Skipping error page: {current_url}")
                     result.failed_urls.append(current_url)
                     continue
                 

@@ -1,11 +1,28 @@
 # Web2PDF Project Status
 
-**Version:** v0.1  
-**Last Updated:** 2026-01-17
+**Version:** v0.2  
+**Last Updated:** 2026-01-21
 
 ## ✅ Project Status: COMPLETE
 
 The web documentation to PDF converter is **fully implemented** and functional.
+
+---
+
+## Release v0.2 Highlights
+
+### Bug Fixes
+- **Fixed error page inclusion** - Custom 404-style error pages (HTTP 200 with "content not found" messages) are now filtered out instead of being included in the PDF output
+
+### New Features
+- **Error page detection** - `is_error_page()` function detects common error patterns in HTML content
+- **Extended error patterns** - Supports HP-style "content you're looking for is not here" and other common 404 messages
+
+### Test Results
+HP Anyware Manager as a Service documentation:
+- **Before fix:** 72 pages crawled → 109 PDF pages (including error pages)
+- **After fix:** 66 pages crawled → 103 PDF pages (error pages filtered)
+- **Error pages filtered:** 6
 
 ---
 
@@ -44,23 +61,13 @@ The web documentation to PDF converter is **fully implemented** and functional.
 
 2. **URL Filtering** - Filters external links, excludes assets, restricts to documentation path
 
-3. **PDF Conversion** - wkhtmltopdf via pdfkit with sanitized HTML (removes overlays, navigation elements)
+3. **Error Page Detection** - Filters out 404-style error pages that return HTTP 200 *(new in v0.2)*
 
-4. **PDF Merging** - PyPDF2 merging with bookmarks + PyMuPDF page numbering
+4. **PDF Conversion** - wkhtmltopdf via pdfkit with sanitized HTML (removes overlays, navigation elements)
 
-5. **CLI Interface** - Custom output, configurable depth, adjustable delay, verbose logging
+5. **PDF Merging** - PyPDF2 merging with bookmarks + PyMuPDF page numbering
 
----
-
-## Verification
-
-### Test Run
-HP Anyware Manager Enterprise documentation:
-- **Output:** `anyware_docs_complete.pdf`
-- **Pages:** 131 (from 106 crawled pages)
-- **Crawl time:** ~10 minutes
-- **Page numbers:** ✅ Correct sequential numbering
-- **Hyperlinks:** ✅ No overlay issues
+6. **CLI Interface** - Custom output, configurable depth, adjustable delay, verbose logging
 
 ---
 
@@ -94,3 +101,4 @@ python -m src.main https://docs.example.com/ \
 ## Repository
 
 GitHub: https://github.com/thomasckr/web2pdf-gag
+
