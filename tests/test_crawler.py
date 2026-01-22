@@ -14,7 +14,7 @@ from unittest.mock import Mock, patch, MagicMock
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.config import CrawlerConfig
-from src.crawler import WebCrawler, CrawledPage, CrawlResult
+from src.crawler import WebCrawler, CrawledPage, CrawlResult, is_error_page
 
 
 class TestCrawlerConfig(unittest.TestCase):
@@ -176,5 +176,51 @@ class TestCrawlResult(unittest.TestCase):
         self.assertEqual(len(result.skipped_urls), 1)
 
 
+class TestErrorPageDetection(unittest.TestCase):
+    """Tests for is_error_page() function."""
+    
+    def test_detects_hp_error_page(self):
+        """Test detection of HP's custom 404 error page."""
+        html = '''
+        <html>
+        <head><title>Error</title></head>
+        <body>
+            <h1>The content you're looking for is not here.</h1>
+            <p>If you think there's been a mistake, please open a support ticket.</p>
+        </body>
+        </html>
+        '''
+        self.assertTrue(is_error_page(html))
+    
+    def test_detects_page_not_found(self):
+        """Test detection of 'Page not found' error."""
+        html = '<html><body><h1>Page Not Found</h1></body></html>'
+        self.assertTrue(is_error_page(html))
+    
+    def test_detects_404_error(self):
+        """Test detection of 404 error message."""
+        html = '<html><body><h1>404 Error</h1><p>The page does not exist.</p></body></html>'
+        self.assertTrue(is_error_page(html))
+    
+    def test_valid_page_not_detected_as_error(self):
+        """Test that valid documentation pages are not flagged as errors."""
+        html = '''
+        <html>
+        <head><title>Installation Guide</title></head>
+        <body>
+            <h1>Installation Guide</h1>
+            <p>This guide explains how to install the software.</p>
+        </body>
+        </html>
+        '''
+        self.assertFalse(is_error_page(html))
+    
+    def test_case_insensitive_matching(self):
+        """Test that error detection is case-insensitive."""
+        html = '<html><body>THE CONTENT YOU\'RE LOOKING FOR IS NOT HERE</body></html>'
+        self.assertTrue(is_error_page(html))
+
+
 if __name__ == '__main__':
     unittest.main()
+
