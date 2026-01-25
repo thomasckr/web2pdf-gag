@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page, TimeoutError as PlaywrightTimeout
 
 from .config import CrawlerConfig
-from .url_utils import normalize_url, extract_links, get_page_title, is_internal_link, is_within_doc_path
+from .url_utils import normalize_url, rewrite_versioned_url, extract_links, get_page_title, is_internal_link, is_within_doc_path
 
 
 # Configure logging for the crawler module
@@ -294,6 +294,8 @@ class WebCrawler:
                 
                 for link in links:
                     normalized_link = normalize_url(link, current_url)
+                    # Rewrite version-less URLs to include the version from base URL
+                    normalized_link = rewrite_versioned_url(normalized_link, self.config.base_url)
                     
                     # Skip already visited URLs
                     if normalized_link in self.visited_urls:
