@@ -1,11 +1,24 @@
 # Web2PDF Project Status
 
-**Version:** v0.3  
+**Version:** v0.3.1  
 **Last Updated:** 2026-01-24
 
 ## ✅ Project Status: COMPLETE
 
 The web documentation to PDF converter is **fully implemented** and functional.
+
+---
+
+## Release v0.3.1 Highlights
+
+### Bug Fixes
+- **Fixed multi-segment version matching** - Version patterns like `24.10.1` (3 segments) are now properly recognized in addition to `25.10` (2 segments)
+
+### Test Results
+HP Anyware Manager 24.10.1 (Installable) documentation:
+- **Pages crawled:** 59
+- **PDF pages generated:** 107
+- **Output file:** `anyware_manager_24.10.1.pdf`
 
 ---
 

@@ -76,8 +76,8 @@ def rewrite_versioned_url(url: str, base_url: str) -> str:
     if len(base_parts) < 2 or len(url_parts) < 2:
         return url
     
-    # Version pattern: XX.XX, vX.X, latest, docs
-    version_pattern = re.compile(r'^(v?\d+\.?\d*|latest|docs)$', re.IGNORECASE)
+    # Version pattern: XX.XX, XX.XX.X, vX.X.X, latest, docs
+    version_pattern = re.compile(r'^(v?(\d+\.)*\d+|latest|docs)$', re.IGNORECASE)
     
     # Find version segment in base URL
     base_version = None
@@ -214,7 +214,7 @@ def is_within_doc_path(url: str, base_url: str) -> bool:
     url_parts = url_path.split('/')
     
     # Try to find and remove version segment from base path
-    version_pattern = re.compile(r'^(v?\d+\.?\d*|latest|docs)$', re.IGNORECASE)
+    version_pattern = re.compile(r'^(v?(\d+\.)*\d+|latest|docs)$', re.IGNORECASE)
     
     # Build version-less base path
     base_no_version = []
