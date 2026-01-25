@@ -46,6 +46,74 @@ def normalize_url(url: str, base_url: str) -> str:
     return defragged_url
 
 
+def rewrite_versioned_url(url: str, base_url: str) -> str:
+    """
+    Rewrite a version-less URL to include the version from the base URL.
+    
+    HP Anyware docs use version-less navigation links that need to be rewritten
+    to match the versioned base URL. For example:
+    - Base: /web-help/anyware_manager_connector/25.10/
+    - Link: /web-help/anyware_manager_connector/anyware_connector/install/
+    - Result: /web-help/anyware_manager_connector/25.10/anyware_connector/install/
+    
+    Args:
+        url: The URL to potentially rewrite.
+        base_url: The base URL containing the version to inject.
+        
+    Returns:
+        The URL with version injected if needed, or the original URL if no rewrite needed.
+    """
+    parsed_url = urlparse(url)
+    parsed_base = urlparse(base_url)
+    
+    # Only rewrite same-domain URLs
+    if parsed_url.netloc and parsed_url.netloc.lower() != parsed_base.netloc.lower():
+        return url
+    
+    base_parts = [p for p in parsed_base.path.split('/') if p]
+    url_parts = [p for p in parsed_url.path.split('/') if p]
+    
+    if len(base_parts) < 2 or len(url_parts) < 2:
+        return url
+    
+    # Version pattern: XX.XX, vX.X, latest, docs
+    version_pattern = re.compile(r'^(v?\d+\.?\d*|latest|docs)$', re.IGNORECASE)
+    
+    # Find version segment in base URL
+    base_version = None
+    base_version_idx = None
+    for i, part in enumerate(base_parts):
+        if version_pattern.match(part):
+            base_version = part
+            base_version_idx = i
+            break
+    
+    if not base_version:
+        return url  # No version in base URL
+    
+    # Check if URL is missing the version but has matching product path
+    # E.g., base = [web-help, product, 25.10, subpath]
+    #       url  = [web-help, product, subpath]
+    url_has_version = any(version_pattern.match(p) for p in url_parts)
+    
+    if url_has_version:
+        return url  # URL already has a version
+    
+    # Check if the URL path prefix matches the base path prefix (before version)
+    base_prefix = base_parts[:base_version_idx]
+    
+    if len(url_parts) > len(base_prefix) and url_parts[:len(base_prefix)] == base_prefix:
+        # Insert version into URL at the same position
+        new_parts = url_parts[:base_version_idx] + [base_version] + url_parts[base_version_idx:]
+        new_path = '/' + '/'.join(new_parts)
+        if parsed_url.path.endswith('/'):
+            new_path += '/'
+        
+        return f"{parsed_url.scheme or parsed_base.scheme}://{parsed_url.netloc or parsed_base.netloc}{new_path}"
+    
+    return url
+
+
 def get_domain(url: str) -> str:
     """
     Extract the domain (netloc) from a URL.
@@ -101,6 +169,10 @@ def is_within_doc_path(url: str, base_url: str) -> bool:
     This restricts crawling to only pages that share the same path prefix
     as the starting URL (e.g., /web-help/anyware_manager_enterprise/).
     
+    Also handles version-less URLs where the version segment is omitted.
+    For example, if base is /product/25.10/subpath/, a URL /product/subpath/
+    will also match (common in HP Anyware docs navigation).
+    
     Args:
         url: The URL to check.
         base_url: The base URL containing the documentation path prefix.
@@ -131,8 +203,40 @@ def is_within_doc_path(url: str, base_url: str) -> bool:
     base_path = parsed_base.path.rstrip('/')
     url_path = parsed_url.path
     
-    # URL must start with the base documentation path
-    return url_path.startswith(base_path)
+    # Direct match: URL starts with the base documentation path
+    if url_path.startswith(base_path):
+        return True
+    
+    # Version-less match: Handle URLs that omit version numbers
+    # Pattern: /web-help/product/VERSION/subpath -> /web-help/product/subpath
+    # Common version patterns: XX.XX, vX.X, etc.
+    base_parts = base_path.split('/')
+    url_parts = url_path.split('/')
+    
+    # Try to find and remove version segment from base path
+    version_pattern = re.compile(r'^(v?\d+\.?\d*|latest|docs)$', re.IGNORECASE)
+    
+    # Build version-less base path
+    base_no_version = []
+    for part in base_parts:
+        if not version_pattern.match(part):
+            base_no_version.append(part)
+    
+    base_path_no_version = '/'.join(base_no_version)
+    
+    # Build version-less URL path for comparison
+    url_no_version = []
+    for part in url_parts:
+        if not version_pattern.match(part):
+            url_no_version.append(part)
+    
+    url_path_no_version = '/'.join(url_no_version)
+    
+    # Check if version-less paths match
+    if url_path_no_version.startswith(base_path_no_version):
+        return True
+    
+    return False
 
 
 def is_valid_doc_page(url: str) -> bool:

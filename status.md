@@ -1,11 +1,28 @@
 # Web2PDF Project Status
 
-**Version:** v0.2  
-**Last Updated:** 2026-01-21
+**Version:** v0.3  
+**Last Updated:** 2026-01-24
 
 ## ✅ Project Status: COMPLETE
 
 The web documentation to PDF converter is **fully implemented** and functional.
+
+---
+
+## Release v0.3 Highlights
+
+### Bug Fixes
+- **Fixed version-less URL handling** - Sites with navigation links that omit version numbers (e.g., `/product/subpath/` instead of `/product/25.10/subpath/`) are now properly crawled
+
+### New Features
+- **URL version rewriting** - `rewrite_versioned_url()` function automatically injects version numbers from the base URL into version-less navigation links
+- **Enhanced path matching** - `is_within_doc_path()` now matches URLs with different version segment patterns
+
+### Test Results
+HP Anyware Connector 25.10 documentation:
+- **Pages crawled:** 30
+- **PDF pages generated:** 48
+- **Output file:** `anyware_connector_25.10.pdf`
 
 ---
 
@@ -63,11 +80,13 @@ HP Anyware Manager as a Service documentation:
 
 3. **Error Page Detection** - Filters out 404-style error pages that return HTTP 200 *(new in v0.2)*
 
-4. **PDF Conversion** - wkhtmltopdf via pdfkit with sanitized HTML (removes overlays, navigation elements)
+4. **Versioned URL Rewriting** - Automatically injects version numbers into version-less navigation links *(new in v0.3)*
 
-5. **PDF Merging** - PyPDF2 merging with bookmarks + PyMuPDF page numbering
+5. **PDF Conversion** - wkhtmltopdf via pdfkit with sanitized HTML (removes overlays, navigation elements)
 
-6. **CLI Interface** - Custom output, configurable depth, adjustable delay, verbose logging
+6. **PDF Merging** - PyPDF2 merging with bookmarks + PyMuPDF page numbering
+
+7. **CLI Interface** - Custom output, configurable depth, adjustable delay, verbose logging
 
 ---
 
