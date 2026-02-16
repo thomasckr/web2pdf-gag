@@ -1,7 +1,7 @@
 # Web2PDF Project Status
 
-**Version:** v0.3.1  
-**Last Updated:** 2026-01-24
+**Version:** v0.3.1
+**Last Updated:** 2026-02-15
 
 ## ✅ Project Status: COMPLETE
 
